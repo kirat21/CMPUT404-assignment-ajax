@@ -6,7 +6,7 @@
     <meta content='width=device-width; height=device-height; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;' name='viewport' />
     <meta name="viewport" content="width=device-width" />
     <meta name="license" content="
-        Copyright 2013 Abram Hindle
+        Copyright 2023 Abram Hindle, Gurkirat Singh
         
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -32,25 +32,25 @@ var W = canvas.width  = window.innerWidth-6;
 var H = canvas.height = window.innerHeight-50;
 
 
-function sendJSONXMLHTTPRequest(url, objects, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState==4) {
-            try {
-                if (xhr.status==200) {
-                    //XXX: parse some JSON from the request!
-                    //XXX: Pass the data to the callback!
-                }
-            } 
-            catch(e) {
-                alert('Error: ' + e.name);
-            }
-        }
-    };
-    //XXX: POST to a URL
-    //XXX: set the mimetype and the accept headers!
-    // Remember to use application/json !
-}
+// function sendJSONXMLHTTPRequest(url, objects, callback) {
+//     var xhr = new XMLHttpRequest();
+//     xhr.onreadystatechange = function () {
+//         if (xhr.readyState==4) {
+//             try {
+//                 if (xhr.status==200) {
+//                     //XXX: parse some JSON from the request!
+//                     //XXX: Pass the data to the callback!
+//                 }
+//             } 
+//             catch(e) {
+//                 alert('Error: ' + e.name);
+//             }
+//         }
+//     };
+//     //XXX: POST to a URL
+//     //XXX: set the mimetype and the accept headers!
+//     // Remember to use application/json !
+// }
 
 
 world = {};
@@ -135,7 +135,22 @@ function getPosition(e) {
 
 
 function addEntity(entity, data) {
-    world[entity] = data;
+    // world[entity] = data;
+    // send post data to server to add new enitity
+    fetch('/entity/' + entity, {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    },)
+    .then(response => response.json())
+    .then(world => {
+        console.log('Server world:', world);
+        update(world);
+    })
+    
+
     drawNextFrame(); // (but should we?)
     //XXX: Send a XHTML Request that updates the entity you just  modified!
 
@@ -144,7 +159,7 @@ function addEntity(entity, data) {
 var counter = 0;
 function addEntityWithoutName(data) {
     //var name = "X"+Math.floor((Math.random()*100)+1);
-    var name = "X"+(counter++)%100;
+    var name = "X"+(counter++);
     addEntity(name,data);
 }
 
@@ -262,6 +277,21 @@ mouse.mousedraggers.push(function(x,y,clicked,e) {
 
 function update() {
     //XXX: TODO Get the world from the webservice using a XMLHTTPRequest
+    // world = fetchrequest(world)
+    // world = fetch("/world", {
+    //     method: "GET"
+    // })
+    // .then(function(response) { return response.json(); })
+    // .then(function(json) {
+    // // use the json
+    // });
+    fetch('/world')
+    .then(response => response.json())
+    .then(world => {
+        console.log('Server world:', world);
+        update(world);
+    })
+    .catch(error => console.error('Error fetching world:', error));
     drawFrame();
 }
 
